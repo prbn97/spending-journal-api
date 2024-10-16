@@ -1,0 +1,6 @@
+openapi: "3.0.3"
+info:
+  title: Spending JournalAPI Definition
+  version: 0.0.1
+
+paths: {}
