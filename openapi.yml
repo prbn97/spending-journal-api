@@ -10,7 +10,7 @@ info:
   license:
     name: MIT license
     url: https://spendingjournal.com/license/
-  version: 0.0.1
+  version: 0.0.3
 servers:
   - description: API server
     url: https://api.spendingjournal.com/v1
@@ -20,114 +20,178 @@ paths: {}
 
 components:
   schemas:
+    # Objeto raiz
     SpendingDiary:
       type: object
+      description: "A record of spending, including wages, income, and various types of expenses for a specific month."
+      required:
+        - month
+        - monthlyWage
+        - monthlyIncome
+        - roundUpAdjustment
+        - roundDownAdjustment
+        - fixedExpenses
+        - genericExpenses
       properties:
         month:
           type: string
-          example: "October 2024"
-        wage:
-          example: "Part time job R$950,00"
-          allOf:
-            - $ref: "#/components/schemas/NamedValue"
-        fixed Expenses:
+          description: "Year and month in the format YYYY-MM"
+          pattern: "^\\d{4}-(0[1-9]|1[0-2])$"
+          example: "2024-10"
+        monthlyWage:
+          $ref: "#/components/schemas/Value"
+        monthlyIncome:
+          $ref: "#/components/schemas/Value"
+        roundUpAdjustment:
+          $ref: "#/components/schemas/Value"
+        roundDownAdjustment:
+          $ref: "#/components/schemas/Value"
+
+        fixedExpenses:
           $ref: "#/components/schemas/FixedExpenses"
         genericExpenses:
           $ref: "#/components/schemas/GenericExpenses"
         creditExpenses:
-          $ref: "#/components/schemas/CreditExpenses"
-        accountBalance:
-          allOf:
-            - $ref: "#/components/schemas/NamedValue"
-        positiveCorrectionBalance:
-          example: "Round up"
-          allOf:
-            - $ref: "#/components/schemas/NamedValue"
-        negativeCorrectionBalance:
-          example: "Round down"
-          allOf:
-            - $ref: "#/components/schemas/NamedValue"
+          $ref: "#/components/schemas/CardsExpenses"
 
+    # Despesas Fixas
     FixedExpenses:
       type: object
+      description: "List of fixed expenses that remain constant every month."
+      required:
+        - title
+        - total
+        - expenses
       properties:
         title:
-          example: "Fixed Expenses"
           type: string
+          example: "Fixed Expenses"
         total:
-          allOf:
-            - $ref: "#/components/schemas/Value"
+          $ref: "#/components/schemas/Value"
+        expenses:
+          type: array
+          items:
+            $ref: "#/components/schemas/ExpenseSimple"
+
+    # Despesas Genéricas
     GenericExpenses:
       type: object
+      description: "List of generic expenses that may vary month to month."
+      required:
+        - title
+        - total
+        - expenses
       properties:
         title:
+          type: string
           example: "Generic Expenses"
-          type: string
         total:
-          allOf:
-            - $ref: "#/components/schemas/Value"
+          $ref: "#/components/schemas/Value"
         expenses:
           type: array
           items:
-            $ref: "#/components/schemas/Expense"
-    CreditExpenses:
+            $ref: "#/components/schemas/ExpenseSimple"
+
+    # Despesas com Cartão de Crédito
+    CardsExpenses:
       type: object
+      description: "Expenses related to credit card transactions, including details on outstanding debts."
+      required:
+        - title
+        - total
+        - expenses
       properties:
-        cardName:
+        title:
+          type: string
           example: "Credit Expenses"
-          type: string
         total:
-          allOf:
-            - $ref: "#/components/schemas/Value"
+          $ref: "#/components/schemas/Value"
         expenses:
           type: array
           items:
             $ref: "#/components/schemas/Expense"
 
-    CreditExpensesDetailed:
+    # Tipo Base de Despesas
+    Expense:
       type: object
+      description: "Base type for expense entries, which can be either simple or detailed."
+      discriminator:
+        propertyName: "expenseType"
+        mapping:
+          "simple": "#/components/schemas/ExpenseSimple"
+          "detailed": "#/components/schemas/ExpenseDetailed"
+      oneOf:
+        - $ref: "#/components/schemas/ExpenseSimple"
+        - $ref: "#/components/schemas/ExpenseDetailed"
+
+    # Despesa Simples
+    ExpenseSimple:
+      type: object
+      description: "Represents a simple expense entry."
+      required:
+        - expenseType
+        - expense
       properties:
-        cardName:
-          example: "Bradesco Platinum"
+        expenseType:
           type: string
-        limitTotal:
-          allOf:
-            - $ref: "#/components/schemas/Value"
-        limitAvailable:
-          allOf:
-            - $ref: "#/components/schemas/Value"
-        nextInvoice:
-          allOf:
-            - $ref: "#/components/schemas/Value"
-        detailedExpenses:
+          example: "simple"
+        expense:
+          $ref: "#/components/schemas/NamedValue"
+
+    # Despesa Detalhada
+    ExpenseDetailed:
+      type: object
+      description: "Represents a detailed expense entry."
+      required:
+        - expenseType
+        - title
+        - nextInvoice
+        - interestRefunds
+        - prepayments
+        - limitTotal
+        - limitAvailable
+      properties:
+        expenseType:
+          type: string
+          example: "detailed"
+        title:
+          type: string
+          example: "Credit detailed expense"
+        expensesInNextInvoice:
           type: array
           items:
-            $ref: "#/components/schemas/Expense"
+            $ref: "#/components/schemas/ExpenseSimple"
+        nextInvoice:
+          $ref: "#/components/schemas/Value"
         interestRefunds:
-          allOf:
-            - $ref: "#/components/schemas/Value"
+          $ref: "#/components/schemas/Value"
         prepayments:
-          allOf:
-            - $ref: "#/components/schemas/Value"
+          $ref: "#/components/schemas/Value"
+        limitTotal:
+          $ref: "#/components/schemas/Value"
+        limitAvailable:
+          $ref: "#/components/schemas/Value"
 
-    # Base type to expenses structs.
-    Expense:
-      example: "Expense XYZ: R$130,00"
-      allOf:
-        - $ref: "#/components/schemas/NamedValue"
-    # Add a name to the value
+    # Valor Nomeado
     NamedValue:
-      allOf:
-        - $ref: "#/components/schemas/Value"
+      type: object
+      description: "Represents float number with a name"
+      required:
+        - name
+        - value
       properties:
         name:
-          example: "Salary"
           type: string
-    # Carry a value
-    Value:
-      type: object
-      properties:
+          example: "Salary"
         value:
-          example: 50.00
-          type: number
-          format: float
+          $ref: "#/components/schemas/Value"
+
+    # Tipo Base de Valor
+    Value:
+      type: number
+      description: "Represents float number"
+      format: float
+      multipleOf: 0.01
+      example:
+        - "-50.00"
+        - "50.00"
