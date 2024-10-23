@@ -1,7 +1,7 @@
 openapi: "3.0.3"
 info:
-  title: Spending Journal API Definition
-  description: A spending journal, also known as a spending diary, is API to record of your daily money transactions.
+  title: Spending Diary API Definition
+  description: A spending diary, is API to record of your daily money transactions.
   termsOfService: https://spendingjournal.com./terms/
   contact:
     name: API Support
@@ -26,55 +26,59 @@ components:
         month:
           type: string
           example: "October 2024"
+        wage:
+          example: "Part time job R$950,00"
+          allOf:
+            - $ref: "#/components/schemas/NamedValue"
         fixed Expenses:
           $ref: "#/components/schemas/FixedExpenses"
         genericExpenses:
           $ref: "#/components/schemas/GenericExpenses"
         creditExpenses:
-          $ref: "#/components/schemas/CreditExpensesSimple"
+          $ref: "#/components/schemas/CreditExpenses"
         accountBalance:
           allOf:
             - $ref: "#/components/schemas/NamedValue"
         positiveCorrectionBalance:
+          example: "Round up"
           allOf:
             - $ref: "#/components/schemas/NamedValue"
         negativeCorrectionBalance:
+          example: "Round down"
           allOf:
             - $ref: "#/components/schemas/NamedValue"
 
     FixedExpenses:
       type: object
       properties:
-        info:
-          example: "Total R$130,00"
+        title:
+          example: "Fixed Expenses"
+          type: string
+        total:
           allOf:
-            - $ref: "#/components/schemas/NamedValue"
-        expenses:
-          type: array
-          items:
-            $ref: "#/components/schemas/Expense"
+            - $ref: "#/components/schemas/Value"
     GenericExpenses:
       type: object
       properties:
         title:
-          type: string
           example: "Generic Expenses"
+          type: string
         total:
           allOf:
-            - $ref: "#/components/schemas/NamedValue"
+            - $ref: "#/components/schemas/Value"
         expenses:
           type: array
           items:
             $ref: "#/components/schemas/Expense"
-    CreditExpensesSimple:
+    CreditExpenses:
       type: object
       properties:
         cardName:
+          example: "Credit Expenses"
           type: string
-          example: "Bradesco Platinum"
         total:
           allOf:
-            - $ref: "#/components/schemas/NamedValue"
+            - $ref: "#/components/schemas/Value"
         expenses:
           type: array
           items:
@@ -84,38 +88,46 @@ components:
       type: object
       properties:
         cardName:
-          type: string
           example: "Bradesco Platinum"
+          type: string
         limitTotal:
           allOf:
-            - $ref: "#/components/schemas/NamedValue"
+            - $ref: "#/components/schemas/Value"
         limitAvailable:
           allOf:
-            - $ref: "#/components/schemas/NamedValue"
+            - $ref: "#/components/schemas/Value"
         nextInvoice:
           allOf:
-            - $ref: "#/components/schemas/NamedValue"
+            - $ref: "#/components/schemas/Value"
         detailedExpenses:
           type: array
           items:
             $ref: "#/components/schemas/Expense"
         interestRefunds:
           allOf:
-            - $ref: "#/components/schemas/NamedValue"
+            - $ref: "#/components/schemas/Value"
         prepayments:
           allOf:
-            - $ref: "#/components/schemas/NamedValue"
+            - $ref: "#/components/schemas/Value"
 
+    # Base type to expenses structs.
     Expense:
-      example: "Expense XYZ - R$130,00"
+      example: "Expense XYZ: R$130,00"
       allOf:
         - $ref: "#/components/schemas/NamedValue"
+    # Add a name to the value
     NamedValue:
-      type: object
+      allOf:
+        - $ref: "#/components/schemas/Value"
       properties:
         name:
+          example: "Salary"
           type: string
+    # Carry a value
+    Value:
+      type: object
+      properties:
         value:
+          example: 50.00
           type: number
           format: float
-          example: 50.00

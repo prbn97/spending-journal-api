@@ -1,8 +1,8 @@
-# Spending Diary 
-A spending journal is API to record of your daily money transactions to pass through your mouth.
+# Spending Diary API
+Simple API to record of your daily money transactions to pass through your mouth.
 
-## Estrutura do Spending Diary
-O spending diary será uma estrutura que o usuário cria mensalmente. Dentro desse diário, teremos três categorias de despesas:
+## Spending Diary Abstration
+O spending diary será uma estrutura que o usuário cria mensalmente. Dentro desse diário, Adicionamos nossoteremos três categorias de despesas:
 
 - Despesas fixas: 
 > São aquelas recorrentes, como aluguel ou contas de serviços.
