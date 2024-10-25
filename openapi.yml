@@ -16,6 +16,9 @@ servers:
     url: https://api.spendingjournal.com/v1
 
 # path definitions and examples
+# make user flow to create and update a diary
+# define the actions and the
+# make the endpoints
 paths: {}
 
 components:
